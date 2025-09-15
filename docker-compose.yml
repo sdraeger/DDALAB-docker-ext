@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  backend:
+    image: alpine:latest
+    command: /backend/ddalab-manager
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - backend-data:/backend
+    environment:
+      - SOCKET_PATH=/run/guest/backend.sock
+    networks:
+      - ddalab-extension-network
+
+volumes:
+  backend-data:
+
+networks:
+  ddalab-extension-network:
+    driver: bridge

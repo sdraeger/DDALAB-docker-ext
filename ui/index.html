@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDALAB Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline fallback styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .status-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="container">
+            <div class="header">
+                <h1>DDALAB Manager</h1>
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log("Index.html loaded");
+        
+        // Simple fallback if React doesn't load
+        setTimeout(function() {
+            const root = document.getElementById('root');
+            if (root && root.innerHTML.includes('Loading...')) {
+                root.innerHTML = `
+                    <div class="container">
+                        <div class="header">
+                            <h1>DDALAB Manager</h1>
+                            <p>Manage your DDALAB installation</p>
+                        </div>
+                        <div class="status-card">
+                            <h3>Getting Started</h3>
+                            <p>This extension helps you manage DDALAB installations.</p>
+                            <p>To manage DDALAB, use these commands in your terminal:</p>
+                            <pre style="background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; margin-top: 15px;">cd ~/DDALAB-setup
+./ddalab.sh start    # Start DDALAB
+./ddalab.sh stop     # Stop DDALAB
+./ddalab.sh status   # Check status
+./ddalab.sh logs     # View logs</pre>
+                        </div>
+                    </div>
+                `;
+            }
+        }, 2000);
+    </script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="app-simple.js"></script>
+</body>
+</html>

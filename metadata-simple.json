@@ -1,0 +1,10 @@
+{
+  "icon": "icon.svg",
+  "ui": {
+    "dashboard-tab": {
+      "title": "DDALAB Manager",
+      "root": "/ui",
+      "src": "index.html"
+    }
+  }
+}
