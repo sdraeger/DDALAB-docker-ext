@@ -1,31 +1,87 @@
-.PHONY: build install clean push dev
+# Makefile for DDALAB Docker Extension
 
-EXTENSION_NAME = sdraeger/ddalab-manager
-EXTENSION_TAG = latest
+.PHONY: build build-ui build-docker install update remove clean rebuild dev-rebuild help
 
-build:
-	docker build -t $(EXTENSION_NAME):$(EXTENSION_TAG) .
+# Variables
+EXTENSION_NAME = sdraeger/ddalab-manager:latest
+UI_DIR = ui
+DIST_FILES = bundle.js index.html
 
+# Default target
+all: rebuild
+
+# Build UI only
+build-ui:
+	@echo "📦 Building UI..."
+	@cd $(UI_DIR) && npm run build
+	@cp $(UI_DIR)/dist/bundle.js .
+	@cp $(UI_DIR)/dist/index.html .
+	@echo "✅ UI build complete"
+
+# Build Docker image only
+build-docker:
+	@echo "🐳 Building Docker image..."
+	@docker build -t $(EXTENSION_NAME) .
+	@echo "✅ Docker image built"
+
+# Build everything
+build: build-ui build-docker
+
+# Install extension (first time)
 install: build
-	docker extension install $(EXTENSION_NAME):$(EXTENSION_TAG)
+	@echo "📥 Installing extension..."
+	@echo "y" | docker extension install $(EXTENSION_NAME)
 
+# Update existing extension
 update: build
-	docker extension update $(EXTENSION_NAME):$(EXTENSION_TAG)
+	@echo "🔄 Updating extension..."
+	@echo "y" | docker extension update $(EXTENSION_NAME)
 
-uninstall:
-	docker extension rm $(EXTENSION_NAME):$(EXTENSION_TAG)
+# Remove extension
+remove:
+	@echo "🗑️  Removing extension..."
+	@docker extension rm sdraeger/ddalab-manager || true
 
+# Clean build artifacts
 clean:
-	rm -f backend/ddalab-manager
+	@echo "🧹 Cleaning build artifacts..."
+	@rm -f bundle.js index.html
+	@rm -rf $(UI_DIR)/dist
+	@echo "✅ Clean complete"
 
-push: build
-	docker push $(EXTENSION_NAME):$(EXTENSION_TAG)
+# Full rebuild and update
+rebuild:
+	@./rebuild.sh
 
-dev:
-	docker extension dev debug $(EXTENSION_NAME):$(EXTENSION_TAG)
+# Development rebuild with options
+dev-rebuild:
+	@./rebuild-dev.sh $(ARGS)
 
-validate:
-	docker extension validate $(EXTENSION_NAME):$(EXTENSION_TAG)
+# Quick backend-only rebuild
+backend: 
+	@./rebuild-dev.sh --skip-ui
 
-logs:
-	docker extension dev logs $(EXTENSION_NAME):$(EXTENSION_TAG)
+# Quick frontend-only rebuild
+frontend:
+	@./rebuild-dev.sh --skip-backend
+
+# Show help
+help:
+	@echo "DDALAB Docker Extension - Make targets"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  make build          - Build UI and Docker image"
+	@echo "  make install        - Build and install extension (first time)"
+	@echo "  make update         - Build and update existing extension"
+	@echo "  make rebuild        - Full rebuild and update (default)"
+	@echo "  make backend        - Rebuild only backend"
+	@echo "  make frontend       - Rebuild only frontend"
+	@echo "  make remove         - Remove the extension"
+	@echo "  make clean          - Clean build artifacts"
+	@echo "  make help           - Show this help message"
+	@echo ""
+	@echo "Development options:"
+	@echo "  make dev-rebuild ARGS='--verbose'     - Verbose rebuild"
+	@echo "  make dev-rebuild ARGS='--force'       - Force reinstall"
+	@echo "  make dev-rebuild ARGS='--skip-ui'     - Skip UI build"
+	@echo ""

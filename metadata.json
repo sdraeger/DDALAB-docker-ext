@@ -1,15 +1,13 @@
 {
   "icon": "icon.svg",
+  "vm": {
+    "composefile": "compose.yaml"
+  },
   "ui": {
     "dashboard-tab": {
-      "title": "DDALAB Manager",
+      "title": "DDALABManager",
       "root": "/ui",
       "src": "index.html"
-    }
-  },
-  "backend": {
-    "socket": {
-      "address": "backend.sock"
     }
   }
 }
