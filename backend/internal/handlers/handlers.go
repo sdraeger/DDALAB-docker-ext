@@ -13,28 +13,42 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/sdraeger/DDALAB-docker-ext/internal/envconfig"
 	"github.com/sdraeger/DDALAB-docker-ext/internal/models"
 )
 
+// Legacy types for backward compatibility
+type EnvFile struct {
+	Variables []envconfig.EnvVar `json:"variables"`
+	Path      string             `json:"path"`
+	Modified  bool               `json:"modified"`
+}
+
+type UpdateRequest struct {
+	Variables []envconfig.EnvVar `json:"variables"`
+}
+
 // Manager manages HTTP handlers and their dependencies
 type Manager struct {
-	dockerSvc models.DockerService
-	pathSvc   models.PathService
-	configSvc models.ConfigService
-	healthSvc models.HealthService
-	setupPath string
-	configPath string
+	dockerSvc   models.DockerService
+	pathSvc     models.PathService
+	configSvc   models.ConfigService
+	healthSvc   models.HealthService
+	envConfigSvc *envconfig.Service
+	setupPath   string
+	configPath  string
 }
 
 // NewManager creates a new handler manager
 func NewManager(dockerSvc models.DockerService, pathSvc models.PathService, configSvc models.ConfigService, healthSvc models.HealthService, setupPath, configPath string) *Manager {
 	return &Manager{
-		dockerSvc:  dockerSvc,
-		pathSvc:    pathSvc,
-		configSvc:  configSvc,
-		healthSvc:  healthSvc,
-		setupPath:  setupPath,
-		configPath: configPath,
+		dockerSvc:    dockerSvc,
+		pathSvc:      pathSvc,
+		configSvc:    configSvc,
+		healthSvc:    healthSvc,
+		envConfigSvc: envconfig.NewService(setupPath),
+		setupPath:    setupPath,
+		configPath:   configPath,
 	}
 }
 
@@ -333,5 +347,202 @@ func (m *Manager) HandleDiscoverPaths(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string][]string{
 		"discovered_paths": discoveredPaths,
+	})
+}
+
+// HandleGetEnvFile handles requests to get the environment file configuration
+func (m *Manager) HandleGetEnvFile(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	envConfigResp, err := m.envConfigSvc.GetEnvConfig()
+	if err != nil {
+		log.Printf("Failed to get env file: %v", err)
+		http.Error(w, "Failed to read environment configuration", http.StatusInternalServerError)
+		return
+	}
+	
+	// Convert to old format for backward compatibility
+	envFile := &EnvFile{
+		Variables: envConfigResp.Config.Variables,
+		Path:      envConfigResp.FilePath,
+		Modified:  false,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(envFile)
+}
+
+// HandleUpdateEnvFile handles requests to update the environment file
+func (m *Manager) HandleUpdateEnvFile(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	var updateReq UpdateRequest
+	if err := json.NewDecoder(r.Body).Decode(&updateReq); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Convert to new format
+	envUpdateReq := &envconfig.EnvUpdateRequest{
+		Variables:    updateReq.Variables,
+		CreateBackup: true,
+	}
+
+	err := m.envConfigSvc.UpdateEnvConfig(envUpdateReq)
+	if err != nil {
+		log.Printf("Failed to update env file: %v", err)
+		http.Error(w, "Failed to update environment configuration", http.StatusInternalServerError)
+		return
+	}
+
+	// Create a simple validation response for backward compatibility
+	validation := &envconfig.ValidationResult{
+		Valid:     true,
+		Errors:    []string{},
+		Warnings:  []string{},
+		Variables: updateReq.Variables,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(validation)
+}
+
+// HandleValidateEnvFile handles requests to validate environment variables
+func (m *Manager) HandleValidateEnvFile(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	var validateReq struct {
+		Variables []envconfig.EnvVar `json:"variables"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&validateReq); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	validation, err := m.envConfigSvc.ValidateEnvConfig(validateReq.Variables)
+	if err != nil {
+		log.Printf("Failed to validate env file: %v", err)
+		http.Error(w, "Failed to validate environment configuration", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(validation)
+}
+
+// HandleUpdateDDALAB handles requests to update DDALAB to the latest version
+func (m *Manager) HandleUpdateDDALAB(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	log.Printf("Starting DDALAB update process...")
+	
+	// First, pull the latest images
+	err := m.dockerSvc.ExecuteCompose(m.setupPath, "pull")
+	if err != nil {
+		log.Printf("Failed to pull latest images: %v", err)
+		http.Error(w, "Failed to pull latest images", http.StatusInternalServerError)
+		return
+	}
+
+	// Then restart all services
+	err = m.dockerSvc.ExecuteCompose(m.setupPath, "up", "-d", "--force-recreate")
+	if err != nil {
+		log.Printf("Failed to restart services: %v", err)
+		http.Error(w, "Failed to restart services", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("DDALAB update completed successfully")
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": "success",
+		"message": "DDALAB has been updated to the latest version",
+	})
+}
+
+// HandleBackupEnvFile handles requests to backup the environment configuration
+func (m *Manager) HandleBackupEnvFile(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	backup, err := m.envConfigSvc.CreateBackup()
+	if err != nil {
+		log.Printf("Failed to backup env file: %v", err)
+		http.Error(w, "Failed to backup environment configuration", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"backup_name": backup.Filename,
+		"message": "Environment configuration backed up successfully",
+	})
+}
+
+// HandleListEnvBackups handles requests to list environment configuration backups
+func (m *Manager) HandleListEnvBackups(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	backups, err := m.envConfigSvc.ListBackups()
+	if err != nil {
+		log.Printf("Failed to list env backups: %v", err)
+		http.Error(w, "Failed to list environment backups", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"backups": backups,
+	})
+}
+
+// HandleRestoreEnvFile handles requests to restore environment configuration from backup
+func (m *Manager) HandleRestoreEnvFile(w http.ResponseWriter, r *http.Request) {
+	if m.setupPath == "" {
+		http.Error(w, "DDALAB setup not found", http.StatusNotFound)
+		return
+	}
+
+	var restoreReq struct {
+		BackupName string `json:"backup_name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&restoreReq); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if restoreReq.BackupName == "" {
+		http.Error(w, "Backup name is required", http.StatusBadRequest)
+		return
+	}
+
+	err := m.envConfigSvc.RestoreBackup(restoreReq.BackupName)
+	if err != nil {
+		log.Printf("Failed to restore env file: %v", err)
+		http.Error(w, "Failed to restore environment configuration", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": "success",
+		"message": "Environment configuration restored successfully",
 	})
 }

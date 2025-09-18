@@ -3,7 +3,7 @@
 .PHONY: build build-ui build-docker install update remove clean rebuild dev-rebuild help
 
 # Variables
-EXTENSION_NAME = sdraeger/ddalab-manager:latest
+EXTENSION_NAME = sdraeger1/ddalab-manager:latest
 UI_DIR = ui
 DIST_FILES = bundle.js index.html
 
@@ -40,6 +40,7 @@ update: build
 # Remove extension
 remove:
 	@echo "🗑️  Removing extension..."
+	@docker extension rm sdraeger1/ddalab-manager || true
 	@docker extension rm sdraeger/ddalab-manager || true
 
 # Clean build artifacts

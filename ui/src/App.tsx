@@ -30,10 +30,13 @@ import {
   FolderOpen,
   Dashboard,
   OpenInNew,
+  Update,
+  Edit,
 } from '@mui/icons-material';
 import PathSelector from './components/PathSelector';
 import ServiceList from './components/ServiceList';
 import StatusCard from './components/StatusCard';
+import EnvConfigEditor from './components/EnvConfigEditor';
 import { Status, Alert as AlertType, EnvConfig } from './types';
 
 const API_BASE = 'http://localhost:8080/api';
@@ -50,6 +53,8 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [envConfig, setEnvConfig] = useState<EnvConfig | null>(null);
+  const [envConfigEditorOpen, setEnvConfigEditorOpen] = useState<boolean>(false);
+  const [updating, setUpdating] = useState<boolean>(false);
 
   useEffect(() => {
     loadInitialData();
@@ -206,6 +211,32 @@ function App() {
     }
   };
 
+  const handleUpdateDDALAB = async () => {
+    setUpdating(true);
+    try {
+      const response = await fetch(`${API_BASE}/update`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        showAlert(data.message || 'DDALAB updated successfully', 'success');
+        await fetchStatus();
+      } else {
+        throw new Error('Failed to update DDALAB');
+      }
+    } catch (error) {
+      showAlert((error as Error).message, 'error');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleEnvConfigSave = () => {
+    showAlert('Environment configuration saved successfully', 'success');
+    fetchEnvConfig(); // Refresh env config
+  };
+
   const runningServices = status.services.filter(s => s.status === 'running').length;
   const overallStatus = status.running ? 'running' : 'stopped';
 
@@ -353,6 +384,26 @@ function App() {
                   
                   <Button
                     variant="outlined"
+                    startIcon={<Edit />}
+                    onClick={() => setEnvConfigEditorOpen(true)}
+                    disabled={!currentPath}
+                    fullWidth
+                  >
+                    Edit Configuration
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
+                    startIcon={<Update />}
+                    onClick={handleUpdateDDALAB}
+                    disabled={updating || !currentPath}
+                    fullWidth
+                  >
+                    {updating ? 'Updating...' : 'Update DDALAB'}
+                  </Button>
+                  
+                  <Button
+                    variant="outlined"
                     color="primary"
                     startIcon={<OpenInNew />}
                     onClick={handleOpenWebsite}
@@ -414,6 +465,12 @@ function App() {
           </Box>
         )}
       </Container>
+
+      <EnvConfigEditor
+        open={envConfigEditorOpen}
+        onClose={() => setEnvConfigEditorOpen(false)}
+        onSave={handleEnvConfigSave}
+      />
     </Box>
   );
 }

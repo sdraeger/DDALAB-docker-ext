@@ -82,3 +82,34 @@ export interface StatusCardProps {
   type?: 'status' | 'health' | 'default';
   icon?: React.ReactNode;
 }
+
+// Environment Configuration Types
+export interface EnvVar {
+  key: string;
+  value: string;
+  comment: string;
+  section: string;
+  required: boolean;
+  secret: boolean;
+  line_num: number;
+}
+
+export interface EnvFile {
+  variables: EnvVar[];
+  path: string;
+  modified: boolean;
+}
+
+export interface UpdateEnvRequest {
+  variables: EnvVar[];
+}
+
+export interface ValidationError {
+  key: string;
+  message: string;
+}
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: ValidationError[];
+}
