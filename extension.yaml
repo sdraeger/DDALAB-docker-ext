@@ -1,5 +1,5 @@
 name: ddalab-manager
-title: DDALABManager
+title: DDALAB Manager
 version: 1.0.0
 description: Manage DDALAB (Delay Differential Analysis Laboratory) installations
 vendor: DDALAB Team
@@ -10,3 +10,25 @@ categories:
 architectures:
   - amd64
   - arm64
+homepage: https://github.com/sdraeger/DDALAB
+repository: https://github.com/sdraeger/DDALAB
+documentation: https://github.com/sdraeger/DDALAB/tree/main/docker-extension
+license: MIT
+keywords:
+  - ddalab
+  - edf
+  - delay-differential
+  - analysis
+  - scientific-computing
+  - neuroscience
+  - data-analysis
+maintainer:
+  name: DDALAB Team
+  email: info@ddalab.org
+changelog: |
+  ## v1.0.0
+  - Initial release of DDALAB Manager extension
+  - Service management and monitoring
+  - Environment configuration
+  - Path selection and validation
+  - Real-time status updates

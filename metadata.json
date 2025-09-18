@@ -5,9 +5,30 @@
   },
   "ui": {
     "dashboard-tab": {
-      "title": "DDALABManager",
+      "title": "DDALAB Manager",
       "root": "/ui",
       "src": "index.html"
     }
+  },
+  "host": {
+    "binaries": [
+      {
+        "darwin": [
+          {
+            "path": "/backend/ddalab-manager"
+          }
+        ],
+        "linux": [
+          {
+            "path": "/backend/ddalab-manager"
+          }
+        ],
+        "windows": [
+          {
+            "path": "/backend/ddalab-manager.exe"
+          }
+        ]
+      }
+    ]
   }
 }

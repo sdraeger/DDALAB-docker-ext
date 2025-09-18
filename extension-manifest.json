@@ -1,0 +1,35 @@
+{
+  "name": "ddalab-manager",
+  "title": "DDALAB Manager", 
+  "description": "Manage DDALAB (Delay Differential Analysis Laboratory) installations",
+  "version": "1.0.0",
+  "vendor": "DDALAB Team",
+  "icon": "icon.svg",
+  "categories": ["utility", "data-science", "scientific-computing"],
+  "homepage": "https://github.com/sdraeger/DDALAB",
+  "repository": "https://github.com/sdraeger/DDALAB",
+  "documentation": "https://github.com/sdraeger/DDALAB/tree/main/docker-extension",
+  "license": "MIT",
+  "keywords": ["ddalab", "edf", "delay-differential", "analysis", "scientific-computing", "neuroscience"],
+  "architectures": ["amd64", "arm64"],
+  "ui": {
+    "dashboard-tab": {
+      "title": "DDALAB Manager",
+      "root": "/ui",
+      "src": "index.html"
+    }
+  },
+  "vm": {
+    "composefile": "compose.yaml"
+  },
+  "host": {
+    "binaries": [
+      {
+        "darwin": [{"path": "/backend/ddalab-manager"}],
+        "linux": [{"path": "/backend/ddalab-manager"}],
+        "windows": [{"path": "/backend/ddalab-manager.exe"}]
+      }
+    ]
+  },
+  "changelog": "Initial release with service management, monitoring, and configuration capabilities"
+}
