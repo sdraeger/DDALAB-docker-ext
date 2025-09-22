@@ -1,7 +1,7 @@
 # Multi-stage build for Docker Desktop Extension
 
 # Use pre-built backend from ddalab-control
-FROM sdraeger/ddalab-control:latest AS backend
+FROM sdraeger1/ddalab-control:latest AS backend
 
 # Final stage
 FROM alpine:latest
