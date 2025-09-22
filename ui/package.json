@@ -1,5 +1,5 @@
 {
-  "name": "ddalab-manager-ui",
+  "name": "ddalab-docker-ext-ui",
   "version": "1.0.0",
   "description": "DDALAB Manager Docker Extension UI",
   "main": "index.js",
