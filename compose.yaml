@@ -1,16 +1,51 @@
 services:
+  # Extension UI service
   service:
     image: ${DESKTOP_PLUGIN_IMAGE}
+    expose:
+      - "3000"
+    working_dir: /ui
+    command: ["sh", "-c", "apk add --no-cache python3 && python3 -m http.server 3000"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 32M
+    restart: unless-stopped
+    depends_on:
+      - ddalab-control
+    
+  # DDALAB Control backend service
+  ddalab-control:
+    image: sdraeger1/ddalab-control:latest
     volumes:
+      # Docker socket for container management
       - type: bind
         source: /var/run/docker.sock.raw
         target: /var/run/docker.sock
-    # No external port mapping - extension runs inside Docker Desktop VM
+      # User home directory for DDALAB discovery (read-only)
+      - type: bind
+        source: /home
+        target: /host/home
+        read_only: true
+      # Users directory for macOS (read-only)
+      - type: bind
+        source: /Users
+        target: /host/Users
+        read_only: true
+      # Tmp directory for config storage
+      - type: volume
+        source: ddalab-config
+        target: /tmp
     expose:
       - "8080"
-    command: /backend/ddalab-manager
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOST_HOME_LINUX=/host/home
+      - HOST_HOME_MACOS=/host/Users
     deploy:
       resources:
         limits:
@@ -25,4 +60,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 15s
+
+volumes:
+  ddalab-config:
