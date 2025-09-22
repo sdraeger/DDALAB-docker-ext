@@ -23,11 +23,6 @@ services:
       - type: bind
         source: /var/run/docker.sock.raw
         target: /var/run/docker.sock
-      # User home directory for DDALAB discovery (read-only)
-      - type: bind
-        source: /home
-        target: /host/home
-        read_only: true
       # Users directory for macOS (read-only)
       - type: bind
         source: /Users
@@ -41,7 +36,6 @@ services:
       - "8080"
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - HOST_HOME_LINUX=/host/home
       - HOST_HOME_MACOS=/host/Users
     deploy:
       resources:

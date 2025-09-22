@@ -1,5 +1,5 @@
 {
-  "name": "ddalab-manager",
+  "name": "ddalab-docker-ext",
   "title": "DDALAB Manager", 
   "description": "Manage DDALAB (Delay Differential Analysis Laboratory) installations",
   "version": "1.0.0",

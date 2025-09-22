@@ -15,7 +15,7 @@ docker run -d \
   -p 8080:8080 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /Users/simon/Desktop/DDALAB-setup:/Users/simon/Desktop/DDALAB-setup:ro \
-  sdraeger/ddalab-manager:latest
+  sdraeger1/ddalab-docker-ext:latest
 
 # Wait a moment for startup
 sleep 3

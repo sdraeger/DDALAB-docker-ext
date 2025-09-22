@@ -215,10 +215,10 @@ npm run build
 cd ..
 
 # Build the extension
-docker build -t ddalab-manager .
+docker build -t ddalab-docker-ext .
 
 # Install locally
-docker extension install ddalab-manager:latest
+docker extension install ddalab-docker-ext:latest
 ```
 
 ### Extension Structure

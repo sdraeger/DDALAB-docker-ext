@@ -1,4 +1,4 @@
-name: ddalab-manager
+name: ddalab-docker-ext
 title: DDALAB Manager
 version: 1.0.0
 description: Manage DDALAB (Delay Differential Analysis Laboratory) installations

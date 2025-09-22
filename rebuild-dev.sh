@@ -4,7 +4,7 @@
 set -e  # Exit on error
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-EXTENSION_NAME="sdraeger/ddalab-manager:latest"
+EXTENSION_NAME="sdraeger1/ddalab-docker-ext:latest"
 
 # Default options
 SKIP_UI=false
@@ -113,14 +113,14 @@ echo "✅ Docker image built successfully"
 
 # Force reinstall if requested
 if [ "$FORCE_REINSTALL" = true ]; then
-    if docker extension ls | grep -q "sdraeger/ddalab-manager"; then
+    if docker extension ls | grep -q "sdraeger1/ddalab-docker-ext"; then
         echo "🗑️  Removing existing extension..."
-        docker extension rm sdraeger/ddalab-manager 2>/dev/null || true
+        docker extension rm sdraeger1/ddalab-docker-ext 2>/dev/null || true
     fi
 fi
 
 # Check if extension is already installed
-if docker extension ls | grep -q "sdraeger/ddalab-manager"; then
+if docker extension ls | grep -q "sdraeger1/ddalab-docker-ext"; then
     echo "🔄 Updating existing extension..."
     if [ "$VERBOSE" = true ]; then
         echo "y" | docker extension update "$EXTENSION_NAME"
@@ -143,7 +143,7 @@ if [ $? -eq 0 ]; then
     
     # Show extension status
     echo "📊 Extension Status:"
-    docker extension ls | grep -E "(PROVIDER|sdraeger/ddalab-manager)" | column -t
+    docker extension ls | grep -E "(PROVIDER|sdraeger1/ddalab-docker-ext)" | column -t
     
     echo ""
     echo "🚀 The DDALAB Manager is ready in Docker Desktop!"

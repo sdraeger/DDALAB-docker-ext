@@ -4,7 +4,7 @@
 set -e  # Exit on error
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-EXTENSION_NAME="sdraeger/ddalab-manager:latest"
+EXTENSION_NAME="sdraeger1/ddalab-docker-ext:latest"
 
 echo "🔨 Building DDALAB Docker Extension..."
 echo "======================================"
@@ -39,7 +39,7 @@ fi
 echo "✅ Docker image built successfully"
 
 # Check if extension is already installed
-if docker extension ls | grep -q "sdraeger/ddalab-manager"; then
+if docker extension ls | grep -q "sdraeger1/ddalab-docker-ext"; then
     echo "🔄 Updating existing extension..."
     echo "y" | docker extension update "$EXTENSION_NAME"
 else
