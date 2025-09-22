@@ -39,7 +39,7 @@ import StatusCard from './components/StatusCard';
 import EnvConfigEditor from './components/EnvConfigEditor';
 import { Status, Alert as AlertType, EnvConfig } from './types';
 
-const API_BASE = 'http://ddalab-control:8080/api';
+const API_BASE = '/api';
 
 function App() {
   const [status, setStatus] = useState<Status>({

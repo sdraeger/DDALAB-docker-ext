@@ -7,8 +7,7 @@
     "dashboard-tab": {
       "title": "DDALAB Manager",
       "root": "/ui",
-      "src": "index.html",
-      "port": 3000
+      "src": "index.html"
     }
   },
   "host": {

@@ -17,8 +17,9 @@ COPY extension.yaml /extension.yaml
 COPY extension-manifest.json /extension-manifest.json
 COPY compose.yaml /compose.yaml
 COPY icon.svg /icon.svg
+COPY proxy.sh /proxy.sh
 
-RUN chmod +x /backend/ddalab-manager
+RUN chmod +x /backend/ddalab-manager /proxy.sh
 
 # Expose port 8080 for the backend
 EXPOSE 8080
