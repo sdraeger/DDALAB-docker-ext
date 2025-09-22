@@ -1,12 +1,7 @@
 # Multi-stage build for Docker Desktop Extension
 
-# Build backend
-FROM golang:1.23-alpine AS backend-builder
-WORKDIR /backend
-COPY backend/go.mod backend/go.sum ./
-RUN go mod download
-COPY backend/ .
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o ddalab-manager .
+# Use pre-built backend from ddalab-control
+FROM sdraeger/ddalab-control:latest AS backend
 
 # Final stage
 FROM alpine:latest
@@ -15,7 +10,7 @@ RUN apk --no-cache add ca-certificates docker-cli docker-compose bash wget
 # Create necessary directories and set permissions
 RUN mkdir -p /run/guest-services && chmod 755 /run/guest-services
 
-COPY --from=backend-builder /backend/ddalab-manager /backend/ddalab-manager
+COPY --from=backend /app/ddalab-control /backend/ddalab-manager
 COPY ui/dist /ui
 COPY metadata.json /metadata.json
 COPY extension.yaml /extension.yaml
